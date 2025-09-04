@@ -11,15 +11,40 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar, Baby, Target, RotateCcw, CalendarDays, Share2, Trophy, Lightbulb, Clock, Heart, Globe, Moon, Sun, HelpCircle, Info } from "lucide-react";
 
 const ageFormSchema = z.object({
-  birthDate: z.string().min(1, "Birth date is required"),
-  targetDate: z.string().min(1, "Target date is required")
+  birthDay: z.string().min(1, "Day is required").refine((val) => {
+    const day = parseInt(val);
+    return day >= 1 && day <= 31;
+  }, "Day must be between 1 and 31"),
+  birthMonth: z.string().min(1, "Month is required").refine((val) => {
+    const month = parseInt(val);
+    return month >= 1 && month <= 12;
+  }, "Month must be between 1 and 12"),
+  birthYear: z.string().min(1, "Year is required").refine((val) => {
+    const year = parseInt(val);
+    return year >= 1900 && year <= new Date().getFullYear();
+  }, "Year must be valid"),
+  targetDay: z.string().min(1, "Day is required").refine((val) => {
+    const day = parseInt(val);
+    return day >= 1 && day <= 31;
+  }, "Day must be between 1 and 31"),
+  targetMonth: z.string().min(1, "Month is required").refine((val) => {
+    const month = parseInt(val);
+    return month >= 1 && month <= 12;
+  }, "Month must be between 1 and 12"),
+  targetYear: z.string().min(1, "Year is required").refine((val) => {
+    const year = parseInt(val);
+    return year >= 1900 && year <= new Date().getFullYear() + 10;
+  }, "Year must be valid")
 }).refine((data) => {
-  const birth = new Date(data.birthDate);
-  const target = new Date(data.targetDate);
+  if (!data.birthDay || !data.birthMonth || !data.birthYear || !data.targetDay || !data.targetMonth || !data.targetYear) {
+    return true; // Let individual field validation handle empty values
+  }
+  const birth = new Date(parseInt(data.birthYear), parseInt(data.birthMonth) - 1, parseInt(data.birthDay));
+  const target = new Date(parseInt(data.targetYear), parseInt(data.targetMonth) - 1, parseInt(data.targetDay));
   return !isAfter(birth, target);
 }, {
   message: "Birth date cannot be after the target date",
-  path: ["targetDate"]
+  path: ["targetYear"]
 });
 
 type AgeFormData = z.infer<typeof ageFormSchema>;
@@ -41,20 +66,28 @@ export default function Home() {
   const form = useForm<AgeFormData>({
     resolver: zodResolver(ageFormSchema),
     defaultValues: {
-      birthDate: "1995-09-20",
-      targetDate: "2024-01-21"
+      birthDay: "20",
+      birthMonth: "09",
+      birthYear: "1995",
+      targetDay: "21",
+      targetMonth: "01",
+      targetYear: "2024"
     }
   });
 
   const { watch, setValue, formState: { errors } } = form;
-  const birthDate = watch("birthDate");
-  const targetDate = watch("targetDate");
+  const birthDay = watch("birthDay");
+  const birthMonth = watch("birthMonth");
+  const birthYear = watch("birthYear");
+  const targetDay = watch("targetDay");
+  const targetMonth = watch("targetMonth");
+  const targetYear = watch("targetYear");
 
   // Calculate age whenever dates change
   useEffect(() => {
-    if (birthDate && targetDate) {
-      const birth = new Date(birthDate);
-      const target = new Date(targetDate);
+    if (birthDay && birthMonth && birthYear && targetDay && targetMonth && targetYear) {
+      const birth = new Date(parseInt(birthYear), parseInt(birthMonth) - 1, parseInt(birthDay));
+      const target = new Date(parseInt(targetYear), parseInt(targetMonth) - 1, parseInt(targetDay));
       
       if (!isAfter(birth, target)) {
         const years = differenceInYears(target, birth);
@@ -73,9 +106,13 @@ export default function Home() {
           totalWeeks,
           totalMonths
         });
+      } else {
+        setAgeResult(null);
       }
+    } else {
+      setAgeResult(null);
     }
-  }, [birthDate, targetDate]);
+  }, [birthDay, birthMonth, birthYear, targetDay, targetMonth, targetYear]);
 
   // Theme toggle
   useEffect(() => {
@@ -93,20 +130,27 @@ export default function Home() {
   };
 
   const clearDates = () => {
-    setValue("birthDate", "");
-    setValue("targetDate", "");
+    setValue("birthDay", "");
+    setValue("birthMonth", "");
+    setValue("birthYear", "");
+    setValue("targetDay", "");
+    setValue("targetMonth", "");
+    setValue("targetYear", "");
     setAgeResult(null);
   };
 
   const setToday = () => {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    setValue("targetDate", today);
+    const today = new Date();
+    setValue("targetDay", today.getDate().toString().padStart(2, '0'));
+    setValue("targetMonth", (today.getMonth() + 1).toString().padStart(2, '0'));
+    setValue("targetYear", today.getFullYear().toString());
   };
 
   const shareResult = async () => {
-    if (!ageResult) return;
+    if (!ageResult || !targetDay || !targetMonth || !targetYear) return;
     
-    const shareText = `On ${format(new Date(targetDate), 'MMMM dd, yyyy')}, I was exactly ${ageResult.years} years, ${ageResult.months} months, and ${ageResult.days} days old.`;
+    const targetDate = new Date(parseInt(targetYear), parseInt(targetMonth) - 1, parseInt(targetDay));
+    const shareText = `On ${format(targetDate, 'MMMM dd, yyyy')}, I was exactly ${ageResult.years} years, ${ageResult.months} months, and ${ageResult.days} days old.`;
     
     try {
       await navigator.clipboard.writeText(shareText);
@@ -124,13 +168,21 @@ export default function Home() {
   };
 
   const loadExample = (birth: string, target: string) => {
-    setValue("birthDate", birth);
-    setValue("targetDate", target);
+    const birthDate = new Date(birth);
+    const targetDate = new Date(target);
+    
+    setValue("birthDay", birthDate.getDate().toString().padStart(2, '0'));
+    setValue("birthMonth", (birthDate.getMonth() + 1).toString().padStart(2, '0'));
+    setValue("birthYear", birthDate.getFullYear().toString());
+    
+    setValue("targetDay", targetDate.getDate().toString().padStart(2, '0'));
+    setValue("targetMonth", (targetDate.getMonth() + 1).toString().padStart(2, '0'));
+    setValue("targetYear", targetDate.getFullYear().toString());
   };
 
   const getMilestone = (age: number) => {
-    if (!birthDate) return "N/A";
-    const birth = new Date(birthDate);
+    if (!birthDay || !birthMonth || !birthYear) return "N/A";
+    const birth = new Date(parseInt(birthYear), parseInt(birthMonth) - 1, parseInt(birthDay));
     return format(addYears(birth, age), 'MMM dd, yyyy');
   };
 
@@ -192,16 +244,48 @@ export default function Home() {
                 <Baby className="text-primary mr-2 h-4 w-4" />
                 Birth Date
               </Label>
-              <Input
-                type="date"
-                {...form.register("birthDate")}
-                data-testid="input-birth-date"
-                className="date-input"
-              />
-              {errors.birthDate && (
-                <p className="text-xs text-destructive">{errors.birthDate.message}</p>
-              )}
-              <p className="text-xs text-muted-foreground">The date you were born</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="DD"
+                    min="1"
+                    max="31"
+                    {...form.register("birthDay")}
+                    data-testid="input-birth-day"
+                  />
+                  {errors.birthDay && (
+                    <p className="text-xs text-destructive mt-1">{errors.birthDay.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="MM"
+                    min="1"
+                    max="12"
+                    {...form.register("birthMonth")}
+                    data-testid="input-birth-month"
+                  />
+                  {errors.birthMonth && (
+                    <p className="text-xs text-destructive mt-1">{errors.birthMonth.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="YYYY"
+                    min="1900"
+                    max={new Date().getFullYear()}
+                    {...form.register("birthYear")}
+                    data-testid="input-birth-year"
+                  />
+                  {errors.birthYear && (
+                    <p className="text-xs text-destructive mt-1">{errors.birthYear.message}</p>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">The date you were born (DD, MM, YYYY)</p>
             </div>
 
             {/* Target Date */}
@@ -210,16 +294,48 @@ export default function Home() {
                 <Target className="text-primary mr-2 h-4 w-4" />
                 Target Date
               </Label>
-              <Input
-                type="date"
-                {...form.register("targetDate")}
-                data-testid="input-target-date"
-                className="date-input"
-              />
-              {errors.targetDate && (
-                <p className="text-xs text-destructive">{errors.targetDate.message}</p>
-              )}
-              <p className="text-xs text-muted-foreground">The date to calculate age for</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="DD"
+                    min="1"
+                    max="31"
+                    {...form.register("targetDay")}
+                    data-testid="input-target-day"
+                  />
+                  {errors.targetDay && (
+                    <p className="text-xs text-destructive mt-1">{errors.targetDay.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="MM"
+                    min="1"
+                    max="12"
+                    {...form.register("targetMonth")}
+                    data-testid="input-target-month"
+                  />
+                  {errors.targetMonth && (
+                    <p className="text-xs text-destructive mt-1">{errors.targetMonth.message}</p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    type="number"
+                    placeholder="YYYY"
+                    min="1900"
+                    max={new Date().getFullYear() + 10}
+                    {...form.register("targetYear")}
+                    data-testid="input-target-year"
+                  />
+                  {errors.targetYear && (
+                    <p className="text-xs text-destructive mt-1">{errors.targetYear.message}</p>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">The date to calculate age for (DD, MM, YYYY)</p>
             </div>
           </div>
 
@@ -281,7 +397,7 @@ export default function Home() {
               <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/10">
                 <p className="text-lg">
                   On <span className="font-semibold text-primary" data-testid="text-target-formatted">
-                    {format(new Date(targetDate), 'MMMM dd, yyyy')}
+                    {targetDay && targetMonth && targetYear ? format(new Date(parseInt(targetYear), parseInt(targetMonth) - 1, parseInt(targetDay)), 'MMMM dd, yyyy') : 'the target date'}
                   </span>, 
                   you were exactly <span className="font-bold text-primary" data-testid="text-age-summary">
                     {ageResult.years} years, {ageResult.months} months, and {ageResult.days} days
