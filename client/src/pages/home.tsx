@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, Baby, Target, RotateCcw, CalendarDays, Share2, Moon, Sun, HelpCircle, Info } from "lucide-react";
 
@@ -61,6 +63,8 @@ interface AgeResult {
 export default function Home() {
   const [isDark, setIsDark] = useState(false);
   const [ageResult, setAgeResult] = useState<AgeResult | null>(null);
+  const [birthCalendarOpen, setBirthCalendarOpen] = useState(false);
+  const [targetCalendarOpen, setTargetCalendarOpen] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<AgeFormData>({
@@ -137,6 +141,24 @@ export default function Home() {
     setValue("targetMonth", "");
     setValue("targetYear", "");
     setAgeResult(null);
+  };
+
+  const handleBirthDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setValue("birthDay", date.getDate().toString());
+      setValue("birthMonth", (date.getMonth() + 1).toString());
+      setValue("birthYear", date.getFullYear().toString());
+      setBirthCalendarOpen(false);
+    }
+  };
+
+  const handleTargetDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setValue("targetDay", date.getDate().toString());
+      setValue("targetMonth", (date.getMonth() + 1).toString());
+      setValue("targetYear", date.getFullYear().toString());
+      setTargetCalendarOpen(false);
+    }
   };
 
   const setToday = () => {
@@ -217,46 +239,67 @@ export default function Home() {
                 <Baby className="text-primary mr-2 h-4 w-4" />
                 Birth Date
               </Label>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <Input
-                    type="number"
-                    placeholder="DD"
-                    min="1"
-                    max="31"
-                    {...form.register("birthDay")}
-                    data-testid="input-birth-day"
-                  />
-                  {errors.birthDay && (
-                    <p className="text-xs text-destructive mt-1">{errors.birthDay.message}</p>
-                  )}
+              <div className="flex items-start gap-2">
+                <div className="grid grid-cols-3 gap-2 flex-1">
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="DD"
+                      min="1"
+                      max="31"
+                      {...form.register("birthDay")}
+                      data-testid="input-birth-day"
+                    />
+                    {errors.birthDay && (
+                      <p className="text-xs text-destructive mt-1">{errors.birthDay.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="MM"
+                      min="1"
+                      max="12"
+                      {...form.register("birthMonth")}
+                      data-testid="input-birth-month"
+                    />
+                    {errors.birthMonth && (
+                      <p className="text-xs text-destructive mt-1">{errors.birthMonth.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="YYYY"
+                      min="1900"
+                      max={new Date().getFullYear()}
+                      {...form.register("birthYear")}
+                      data-testid="input-birth-year"
+                    />
+                    {errors.birthYear && (
+                      <p className="text-xs text-destructive mt-1">{errors.birthYear.message}</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <Input
-                    type="number"
-                    placeholder="MM"
-                    min="1"
-                    max="12"
-                    {...form.register("birthMonth")}
-                    data-testid="input-birth-month"
-                  />
-                  {errors.birthMonth && (
-                    <p className="text-xs text-destructive mt-1">{errors.birthMonth.message}</p>
-                  )}
-                </div>
-                <div>
-                  <Input
-                    type="number"
-                    placeholder="YYYY"
-                    min="1900"
-                    max={new Date().getFullYear()}
-                    {...form.register("birthYear")}
-                    data-testid="input-birth-year"
-                  />
-                  {errors.birthYear && (
-                    <p className="text-xs text-destructive mt-1">{errors.birthYear.message}</p>
-                  )}
-                </div>
+                <Popover open={birthCalendarOpen} onOpenChange={setBirthCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-10 px-3"
+                      data-testid="button-birth-calendar"
+                    >
+                      <Calendar className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={birthDay && birthMonth && birthYear ? new Date(parseInt(birthYear), parseInt(birthMonth) - 1, parseInt(birthDay)) : undefined}
+                      onSelect={handleBirthDateSelect}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <p className="text-xs text-muted-foreground">The date you were born (DD, MM, YYYY)</p>
             </div>
@@ -267,46 +310,67 @@ export default function Home() {
                 <Target className="text-primary mr-2 h-4 w-4" />
                 Target Date
               </Label>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <Input
-                    type="number"
-                    placeholder="DD"
-                    min="1"
-                    max="31"
-                    {...form.register("targetDay")}
-                    data-testid="input-target-day"
-                  />
-                  {errors.targetDay && (
-                    <p className="text-xs text-destructive mt-1">{errors.targetDay.message}</p>
-                  )}
+              <div className="flex items-start gap-2">
+                <div className="grid grid-cols-3 gap-2 flex-1">
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="DD"
+                      min="1"
+                      max="31"
+                      {...form.register("targetDay")}
+                      data-testid="input-target-day"
+                    />
+                    {errors.targetDay && (
+                      <p className="text-xs text-destructive mt-1">{errors.targetDay.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="MM"
+                      min="1"
+                      max="12"
+                      {...form.register("targetMonth")}
+                      data-testid="input-target-month"
+                    />
+                    {errors.targetMonth && (
+                      <p className="text-xs text-destructive mt-1">{errors.targetMonth.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <Input
+                      type="number"
+                      placeholder="YYYY"
+                      min="1900"
+                      max={new Date().getFullYear() + 10}
+                      {...form.register("targetYear")}
+                      data-testid="input-target-year"
+                    />
+                    {errors.targetYear && (
+                      <p className="text-xs text-destructive mt-1">{errors.targetYear.message}</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <Input
-                    type="number"
-                    placeholder="MM"
-                    min="1"
-                    max="12"
-                    {...form.register("targetMonth")}
-                    data-testid="input-target-month"
-                  />
-                  {errors.targetMonth && (
-                    <p className="text-xs text-destructive mt-1">{errors.targetMonth.message}</p>
-                  )}
-                </div>
-                <div>
-                  <Input
-                    type="number"
-                    placeholder="YYYY"
-                    min="1900"
-                    max={new Date().getFullYear() + 10}
-                    {...form.register("targetYear")}
-                    data-testid="input-target-year"
-                  />
-                  {errors.targetYear && (
-                    <p className="text-xs text-destructive mt-1">{errors.targetYear.message}</p>
-                  )}
-                </div>
+                <Popover open={targetCalendarOpen} onOpenChange={setTargetCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-10 px-3"
+                      data-testid="button-target-calendar"
+                    >
+                      <Calendar className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={targetDay && targetMonth && targetYear ? new Date(parseInt(targetYear), parseInt(targetMonth) - 1, parseInt(targetDay)) : undefined}
+                      onSelect={handleTargetDateSelect}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <p className="text-xs text-muted-foreground">The date to calculate age for (DD, MM, YYYY)</p>
             </div>
