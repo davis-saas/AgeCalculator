@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Baby, Target, RotateCcw, CalendarDays, Share2, Trophy, Lightbulb, Clock, Heart, Globe, Moon, Sun, HelpCircle, Info } from "lucide-react";
+import { Calendar, Baby, Target, RotateCcw, CalendarDays, Share2, Moon, Sun, HelpCircle, Info } from "lucide-react";
 
 const ageFormSchema = z.object({
   birthDay: z.string().min(1, "Day is required").refine((val) => {
@@ -167,36 +167,9 @@ export default function Home() {
     }
   };
 
-  const loadExample = (birth: string, target: string) => {
-    const birthDate = new Date(birth);
-    const targetDate = new Date(target);
-    
-    setValue("birthDay", birthDate.getDate().toString().padStart(2, '0'));
-    setValue("birthMonth", (birthDate.getMonth() + 1).toString().padStart(2, '0'));
-    setValue("birthYear", birthDate.getFullYear().toString());
-    
-    setValue("targetDay", targetDate.getDate().toString().padStart(2, '0'));
-    setValue("targetMonth", (targetDate.getMonth() + 1).toString().padStart(2, '0'));
-    setValue("targetYear", targetDate.getFullYear().toString());
-  };
 
-  const getMilestone = (age: number) => {
-    if (!birthDay || !birthMonth || !birthYear) return "N/A";
-    const birth = new Date(parseInt(birthYear), parseInt(birthMonth) - 1, parseInt(birthDay));
-    return format(addYears(birth, age), 'MMM dd, yyyy');
-  };
 
-  const getHoursLived = () => {
-    if (!ageResult) return 0;
-    return (ageResult.totalDays * 24).toLocaleString();
-  };
 
-  const getHeartbeats = () => {
-    if (!ageResult) return "0";
-    const minutes = ageResult.totalDays * 24 * 60;
-    const beats = minutes * 70; // Average 70 BPM
-    return (beats / 1000000).toFixed(1) + " million";
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -441,120 +414,8 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* Quick Examples */}
-          <div className="mt-12 pt-8 border-t border-border">
-            <h3 className="text-lg font-semibold mb-6 text-center">Quick Examples</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Button
-                variant="outline"
-                onClick={() => loadExample("1990-01-01", "2024-12-31")}
-                data-testid="button-example-1"
-                className="p-4 h-auto text-left justify-start"
-              >
-                <div>
-                  <div className="font-semibold text-sm mb-1">Born Jan 1, 1990</div>
-                  <div className="text-xs text-muted-foreground">Age on Dec 31, 2024</div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => loadExample("2000-06-15", "2020-06-15")}
-                data-testid="button-example-2"
-                className="p-4 h-auto text-left justify-start"
-              >
-                <div>
-                  <div className="font-semibold text-sm mb-1">Born Jun 15, 2000</div>
-                  <div className="text-xs text-muted-foreground">Age on 20th Birthday</div>
-                </div>
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => loadExample("1985-12-25", "2023-07-04")}
-                data-testid="button-example-3"
-                className="p-4 h-auto text-left justify-start"
-              >
-                <div>
-                  <div className="font-semibold text-sm mb-1">Born Dec 25, 1985</div>
-                  <div className="text-xs text-muted-foreground">Age on July 4, 2023</div>
-                </div>
-              </Button>
-            </div>
-          </div>
         </Card>
 
-        {/* Additional Features */}
-        <div className="grid md:grid-cols-2 gap-6 mt-8">
-          {/* Age Milestones */}
-          <Card className="p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
-                <Trophy className="h-4 w-4" />
-              </div>
-              <h3 className="text-lg font-semibold">Age Milestones</h3>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2 border-b border-border/50">
-                <span className="text-muted-foreground">18th Birthday</span>
-                <span className="font-mono text-sm" data-testid="text-milestone-18">
-                  {getMilestone(18)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-border/50">
-                <span className="text-muted-foreground">21st Birthday</span>
-                <span className="font-mono text-sm" data-testid="text-milestone-21">
-                  {getMilestone(21)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="text-muted-foreground">30th Birthday</span>
-                <span className="font-mono text-sm" data-testid="text-milestone-30">
-                  {getMilestone(30)}
-                </span>
-              </div>
-            </div>
-          </Card>
-
-          {/* Fun Facts */}
-          <Card className="p-6">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-accent/20 text-accent-foreground rounded-lg flex items-center justify-center">
-                <Lightbulb className="h-4 w-4" />
-              </div>
-              <h3 className="text-lg font-semibold">Fun Facts</h3>
-            </div>
-            <div className="space-y-4 text-sm">
-              <div className="flex items-start space-x-3">
-                <Clock className="text-muted-foreground mt-1 h-4 w-4" />
-                <div>
-                  <p className="font-semibold">Time Lived</p>
-                  <p className="text-muted-foreground">
-                    Approximately <span data-testid="text-hours-lived">{getHoursLived()}</span> hours
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Heart className="text-muted-foreground mt-1 h-4 w-4" />
-                <div>
-                  <p className="font-semibold">Heartbeats</p>
-                  <p className="text-muted-foreground">
-                    About <span data-testid="text-heartbeats">{getHeartbeats()}</span> heartbeats
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Globe className="text-muted-foreground mt-1 h-4 w-4" />
-                <div>
-                  <p className="font-semibold">Days on Earth</p>
-                  <p className="text-muted-foreground">
-                    <span data-testid="text-total-days-detail">{ageResult?.totalDays.toLocaleString() || '0'}</span> amazing days lived
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
       </main>
 
       {/* Footer */}
