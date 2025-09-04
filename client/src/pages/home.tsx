@@ -66,12 +66,12 @@ export default function Home() {
   const form = useForm<AgeFormData>({
     resolver: zodResolver(ageFormSchema),
     defaultValues: {
-      birthDay: "20",
-      birthMonth: "09",
-      birthYear: "1995",
-      targetDay: "21",
-      targetMonth: "01",
-      targetYear: "2024"
+      birthDay: "",
+      birthMonth: "",
+      birthYear: "",
+      targetDay: "",
+      targetMonth: "",
+      targetYear: ""
     }
   });
 
