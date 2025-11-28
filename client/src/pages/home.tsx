@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Baby, Target, RotateCcw, CalendarDays, Share2, Moon, Sun, HelpCircle, Info } from "lucide-react";
+import { Calendar, Baby, Target, RotateCcw, CalendarDays, Share2, Moon, Sun, HelpCircle, Info, Globe } from "lucide-react";
+import { getTranslation, type Language } from "@/lib/translations";
 
 const ageFormSchema = z.object({
   birthDay: z.string().min(1, "Day is required").refine((val) => {
@@ -62,10 +63,15 @@ interface AgeResult {
 
 export default function Home() {
   const [isDark, setIsDark] = useState(false);
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem('language');
+    return (saved as Language) || 'en';
+  });
   const [ageResult, setAgeResult] = useState<AgeResult | null>(null);
   const [birthCalendarOpen, setBirthCalendarOpen] = useState(false);
   const [targetCalendarOpen, setTargetCalendarOpen] = useState(false);
   const { toast } = useToast();
+  const t = getTranslation(language);
 
   const form = useForm<AgeFormData>({
     resolver: zodResolver(ageFormSchema),
@@ -133,6 +139,12 @@ export default function Home() {
     localStorage.setItem('theme', !isDark ? 'dark' : 'light');
   };
 
+  const toggleLanguage = () => {
+    const newLanguage: Language = language === 'en' ? 'lv' : 'en';
+    setLanguage(newLanguage);
+    localStorage.setItem('language', newLanguage);
+  };
+
   const clearDates = () => {
     setValue("birthDay", "");
     setValue("birthMonth", "");
@@ -172,18 +184,19 @@ export default function Home() {
     if (!ageResult || !targetDay || !targetMonth || !targetYear) return;
     
     const targetDate = new Date(parseInt(targetYear), parseInt(targetMonth) - 1, parseInt(targetDay));
-    const shareText = `On ${format(targetDate, 'MMMM dd, yyyy')}, I was exactly ${ageResult.years} years, ${ageResult.months} months, and ${ageResult.days} days old.`;
+    const ageText = `${ageResult.years} ${t.results.years.toLowerCase()}, ${ageResult.months} ${t.results.months.toLowerCase()}, ${ageResult.days} ${t.results.days.toLowerCase()}`;
+    const shareText = t.summary.replace('{date}', format(targetDate, 'MMMM dd, yyyy')).replace('{age}', ageText);
     
     try {
       await navigator.clipboard.writeText(shareText);
       toast({
-        title: "Copied to clipboard!",
-        description: "Age calculation result has been copied to your clipboard.",
+        title: t.toast.copiedTitle,
+        description: t.toast.copiedDescription,
       });
     } catch {
       toast({
-        title: "Unable to copy",
-        description: "Please copy the result manually.",
+        title: t.toast.errorTitle,
+        description: t.toast.errorDescription,
         variant: "destructive"
       });
     }
@@ -204,20 +217,31 @@ export default function Home() {
                 <Calendar className="text-lg" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Age Calculator</h1>
-                <p className="text-sm text-muted-foreground">Calculate your exact age on any date</p>
+                <h1 className="text-2xl font-bold">{t.header.title}</h1>
+                <p className="text-sm text-muted-foreground">{t.header.subtitle}</p>
               </div>
             </div>
             
-            <Button
-              variant="secondary"
-              size="icon"
-              onClick={toggleTheme}
-              data-testid="button-theme-toggle"
-              className="w-10 h-10"
-            >
-              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={toggleLanguage}
+                data-testid="button-language-toggle"
+                className="w-10 h-10"
+              >
+                <Globe className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={toggleTheme}
+                data-testid="button-theme-toggle"
+                className="w-10 h-10"
+              >
+                {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -227,8 +251,8 @@ export default function Home() {
         <Card className="p-8 shadow-lg">
           {/* Instructions */}
           <div className="text-center mb-8">
-            <h2 className="text-xl font-semibold mb-2">Calculate Exact Age</h2>
-            <p className="text-muted-foreground">Enter your birth date and target date to see your exact age</p>
+            <h2 className="text-xl font-semibold mb-2">{t.section.calculateExactAge}</h2>
+            <p className="text-muted-foreground">{t.section.instructions}</p>
           </div>
 
           {/* Date Input Section */}
@@ -237,7 +261,7 @@ export default function Home() {
             <div className="space-y-4">
               <Label className="text-sm font-semibold flex items-center">
                 <Baby className="text-primary mr-2 h-4 w-4" />
-                Birth Date
+                {t.labels.birthDate}
               </Label>
               <div className="flex items-start gap-2">
                 <div className="grid grid-cols-3 gap-2 flex-1">
@@ -302,14 +326,14 @@ export default function Home() {
                   </PopoverContent>
                 </Popover>
               </div>
-              <p className="text-xs text-muted-foreground">The date you were born (DD, MM, YYYY)</p>
+              <p className="text-xs text-muted-foreground">{t.placeholders.birthDateHelp}</p>
             </div>
 
             {/* Target Date */}
             <div className="space-y-4">
               <Label className="text-sm font-semibold flex items-center">
                 <Target className="text-primary mr-2 h-4 w-4" />
-                Target Date
+                {t.labels.targetDate}
               </Label>
               <div className="flex items-start gap-2">
                 <div className="grid grid-cols-3 gap-2 flex-1">
@@ -374,14 +398,14 @@ export default function Home() {
                   </PopoverContent>
                 </Popover>
               </div>
-              <p className="text-xs text-muted-foreground">The date to calculate age for (DD, MM, YYYY)</p>
+              <p className="text-xs text-muted-foreground">{t.placeholders.targetDateHelp}</p>
             </div>
           </div>
 
           {/* Results Section */}
           {ageResult && (
             <div className="result-card rounded-xl border border-border p-8 text-center">
-              <h3 className="text-lg font-semibold mb-6">Your exact age on the target date:</h3>
+              <h3 className="text-lg font-semibold mb-6">{t.results.heading}</h3>
               
               {/* Age Display */}
               <div className="grid grid-cols-3 gap-6 mb-6">
@@ -389,42 +413,42 @@ export default function Home() {
                   <div className="text-4xl font-bold text-primary mb-2" data-testid="text-years">
                     {ageResult.years}
                   </div>
-                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Years</div>
+                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t.results.years}</div>
                 </div>
 
                 <div className="bg-accent/20 rounded-lg p-6 border border-accent/30">
                   <div className="text-4xl font-bold text-accent-foreground mb-2" data-testid="text-months">
                     {ageResult.months}
                   </div>
-                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Months</div>
+                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t.results.months}</div>
                 </div>
 
                 <div className="bg-secondary rounded-lg p-6 border border-border">
                   <div className="text-4xl font-bold text-secondary-foreground mb-2" data-testid="text-days">
                     {ageResult.days}
                   </div>
-                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Days</div>
+                  <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t.results.days}</div>
                 </div>
               </div>
 
               {/* Detailed Breakdown */}
               <div className="bg-muted/30 rounded-lg p-6 border border-muted">
-                <h4 className="font-semibold mb-3">Detailed Breakdown</h4>
+                <h4 className="font-semibold mb-3">{t.results.detailedBreakdown}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Days:</span>
+                    <span className="text-muted-foreground">{t.results.totalDays}</span>
                     <span className="font-mono font-semibold" data-testid="text-total-days">
                       {ageResult.totalDays.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Weeks:</span>
+                    <span className="text-muted-foreground">{t.results.totalWeeks}</span>
                     <span className="font-mono font-semibold" data-testid="text-total-weeks">
                       {ageResult.totalWeeks.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Months:</span>
+                    <span className="text-muted-foreground">{t.results.totalMonths}</span>
                     <span className="font-mono font-semibold" data-testid="text-total-months">
                       {ageResult.totalMonths.toLocaleString()}
                     </span>
@@ -455,7 +479,7 @@ export default function Home() {
               variant="default"
             >
               <RotateCcw className="mr-2 h-4 w-4" />
-              Clear Dates
+              {t.buttons.clearDates}
             </Button>
             
             <Button
@@ -465,7 +489,7 @@ export default function Home() {
               variant="secondary"
             >
               <CalendarDays className="mr-2 h-4 w-4" />
-              Use Today
+              {t.buttons.useToday}
             </Button>
             
             <Button
@@ -476,7 +500,7 @@ export default function Home() {
               disabled={!ageResult}
             >
               <Share2 className="mr-2 h-4 w-4" />
-              Share Result
+              {t.buttons.shareResult}
             </Button>
           </div>
 
@@ -490,20 +514,20 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="text-center md:text-left">
               <p className="text-sm text-muted-foreground">
-                Calculate your exact age with precision down to the day
+                {t.footer.description}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                All calculations are performed locally in your browser
+                {t.footer.note}
               </p>
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" size="sm" data-testid="button-help">
                 <HelpCircle className="mr-1 h-4 w-4" />
-                Help
+                {t.buttons.help}
               </Button>
               <Button variant="ghost" size="sm" data-testid="button-about">
                 <Info className="mr-1 h-4 w-4" />
-                About
+                {t.buttons.about}
               </Button>
             </div>
           </div>
