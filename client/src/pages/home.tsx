@@ -297,7 +297,7 @@ export default function Home() {
                       selected={birthDay && birthMonth && birthYear ? new Date(parseInt(birthYear), parseInt(birthMonth) - 1, parseInt(birthDay)) : undefined}
                       onSelect={handleBirthDateSelect}
                       initialFocus
-                      firstDayOfWeek={1}
+                      weekStartsOn={1}
                     />
                   </PopoverContent>
                 </Popover>
@@ -369,7 +369,7 @@ export default function Home() {
                       selected={targetDay && targetMonth && targetYear ? new Date(parseInt(targetYear), parseInt(targetMonth) - 1, parseInt(targetDay)) : undefined}
                       onSelect={handleTargetDateSelect}
                       initialFocus
-                      firstDayOfWeek={1}
+                      weekStartsOn={1}
                     />
                   </PopoverContent>
                 </Popover>
