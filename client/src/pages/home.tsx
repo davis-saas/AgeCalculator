@@ -520,16 +520,6 @@ export default function Home() {
                 {t.footer.note}
               </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" data-testid="button-help">
-                <HelpCircle className="mr-1 h-4 w-4" />
-                {t.buttons.help}
-              </Button>
-              <Button variant="ghost" size="sm" data-testid="button-about">
-                <Info className="mr-1 h-4 w-4" />
-                {t.buttons.about}
-              </Button>
-            </div>
           </div>
         </div>
       </footer>
