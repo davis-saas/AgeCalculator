@@ -1,6 +1,9 @@
 # Overview
 
-This is a full-stack web application built with React, TypeScript, and Express.js that serves as an age calculator tool. The application allows users to input birth dates and target dates to calculate precise age differences in years, months, days, and other time units. It features a modern UI built with shadcn/ui components and Tailwind CSS, with a PostgreSQL database managed through Drizzle ORM for data persistence.
+This is a frontend-focused web application built with React, TypeScript, and Vite that serves as a bilingual age calculator tool. The application allows users to input birth dates and target dates to calculate precise age differences in years, months, days, weeks, and total days. It features a modern UI built with shadcn/ui components and Tailwind CSS, with support for English and Latvian languages.
+
+## Deployment Status
+✅ **Ready for GitHub Pages** - Static build output generated in `dist/public/` with proper base path configuration for project sites (`/AgeCalculator/`)
 
 # User Preferences
 
@@ -12,41 +15,39 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: React 18 with TypeScript using Vite as the build tool
 - **UI Library**: shadcn/ui components built on Radix UI primitives
 - **Styling**: Tailwind CSS with custom CSS variables for theming
-- **State Management**: React Hook Form for form validation with Zod schema validation
-- **Data Fetching**: TanStack Query (React Query) for server state management
+- **Forms**: React Hook Form with Zod schema validation
+- **Icons**: Lucide React for consistent iconography
+- **Date Handling**: date-fns library for precise date calculations and formatting
 - **Routing**: Wouter for lightweight client-side routing
-- **Date Handling**: date-fns library for date calculations and formatting
+- **Internationalization**: Custom translation system supporting English and Latvian
 
-## Backend Architecture
-- **Server**: Express.js with TypeScript running in ESM mode
-- **API Structure**: RESTful API with routes prefixed under `/api`
-- **Request Handling**: Express middleware for JSON parsing and request logging
-- **Error Handling**: Centralized error handling middleware
-- **Development**: Hot reload with tsx and Vite integration
-
-## Data Storage
-- **Database**: PostgreSQL with connection via @neondatabase/serverless
-- **ORM**: Drizzle ORM for type-safe database operations
-- **Schema Management**: Drizzle migrations with schema defined in shared directory
-- **Current Storage**: In-memory storage implementation with interface pattern for easy database integration
-
-## Authentication & Authorization
-- **Session Management**: PostgreSQL-backed sessions using connect-pg-simple
-- **User Schema**: Basic user model with username/password fields
-- **Storage Interface**: Abstracted storage layer supporting user CRUD operations
+## Build & Deployment
+- **Build Tool**: Vite with production-optimized output
+- **Output**: Static HTML/CSS/JS in `dist/public/` for GitHub Pages
+- **Base Path**: Configured for project sites (`/AgeCalculator/`)
+- **Hosting**: GitHub Pages compatible static deployment
 
 ## Development & Build
-- **Monorepo Structure**: Shared TypeScript definitions between client and server
-- **Build Process**: Vite for frontend, esbuild for backend bundling
-- **Path Aliases**: Configured aliases for clean imports (@/, @shared/, etc.)
+- **Build Process**: Vite for optimized frontend bundling
+- **Path Aliases**: Configured aliases for clean imports (@/, @shared/, @assets/)
 - **Development Tools**: Replit integration with cartographer plugin and runtime error overlay
+- **Scripts**:
+  - `npm run dev` - Start development server
+  - `npm run build` - Build for production
+  - `npm run check` - Type checking
 
-## External Dependencies
+## Key Features
+- ✅ Bilingual support (English + Latvian) with persistent language selection
+- ✅ Dark/Light theme toggle with persistent preference
+- ✅ Calendar date pickers with Monday as first day of week
+- ✅ Precise age calculation (years, months, days, total days/weeks)
+- ✅ Form validation with error messages
+- ✅ Copy-to-clipboard sharing functionality
+- ✅ Fully responsive design
+- ✅ All calculations performed locally in browser (no server calls)
 
-- **Database**: Neon PostgreSQL serverless database
-- **UI Components**: Radix UI primitives for accessible component foundations
-- **Validation**: Zod for runtime type checking and form validation
-- **Date Utilities**: date-fns for comprehensive date manipulation
-- **Build Tools**: Vite for frontend development and bundling, esbuild for backend compilation
-- **Development**: Replit-specific plugins for enhanced development experience
-- **Styling**: Tailwind CSS with PostCSS for utility-first styling approach
+## GitHub Pages Deployment
+Ready to deploy to GitHub Pages as a static site:
+1. Built static files in `dist/public/` with index.html
+2. Base path configured for project sites
+3. See README.md for detailed deployment instructions
